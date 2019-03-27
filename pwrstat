@@ -1,0 +1,106 @@
+#!/usr/bin/env python2
+
+"""
+pwrstat - Plugin to monitor CyberPower UPS via pwrstat
+
+by Nelson Minar <nelson@monkey.org>, placed into the public domain
+https://nelsonslog.wordpress.com/2012/01/26/cyberpower-pwrstatd-notes/
+
+Updated by Justin Settle
+
+Additional updates by Ken Link <klink@numberzero.org>
+
+Unfortunately this plugin must run as root, because pwrstat requires
+root to even read data from the UPS.
+"""
+
+import sys, subprocess
+
+# config
+if len(sys.argv) > 1:
+ if sys.argv[1] == "config":
+    print """
+graph_title CyberPower UPS Status
+graph_category sensors
+graph_vlabel value
+graph_info Power Information from attached CyberPower UPS
+graph_args '-l 0'
+
+inV.label Utility Voltage
+inV.info Line Voltage from Utility Provider
+inV.min 0
+inV.max 200
+
+outV.label Output Voltage
+outV.info Output Voltage from UPS
+outV.min 0
+outV.max 200
+
+battery.label Battery Capacity (Percent)
+battery.info Battery Charge in Percent
+battery.min 0
+battery.max 100
+
+runtime.label Remaining Runtime (Minutes)
+runtime.info Estimated Time Remaining on Battery Power
+runtime.min 0
+runtime.max 200
+
+loadWatts.label Load (Watts)
+loadWatts.info Current load in UPS in Watts
+loadWatts.min 0
+loadWatts.max 600
+
+loadPct.label Load (Percent)
+loadPct.info Current load on UPS in Percentage
+loadPct.min 0
+loadPct.max 100
+loadPct.draw AREA
+"""
+    sys.exit(0)
+ else:
+    sys.stderr.write("Unknown argument %s\n" % sys.argv[1])
+    sys.exit(0)
+
+# fetch
+
+output = subprocess.check_output(("/usr/sbin/pwrstat", "-status"), shell=False)
+output = output.split('\n')
+data = {}
+for datum in output[10:-2]:
+ name = datum[:29].strip('.').strip()
+ value = datum[31:].strip()
+ data[name] = value
+
+print "inV.value", data["Utility Voltage"].split()[0]
+print "outV.value", data["Output Voltage"].split()[0]
+print "battery.value", data["Battery Capacity"].split()[0]
+print "runtime.value", data["Remaining Runtime"].split()[0]
+print "loadWatts.value", data["Load"].split()[0]
+print "loadPct.value", data["Load"].split()[1].split('(')[1]
+
+sys.exit(0)
+
+# This is the pwrstat format that we parse. Note, it contains tabs.
+# Comes from pwrstat version 1.2
+exampleOutput="""
+The UPS information shows as following:
+
+Properties:
+ Model Name................... UPS CP1000AVRLCD
+ Firmware Number.............. BFC7101.4K1
+ Rating Voltage............... 120 V
+ Rating Power................. 600 Watt
+
+Current UPS status:
+ State........................ Normal
+ Power Supply by.............. Utility Power
+ Utility Voltage.............. 125 V
+ Output Voltage............... 124 V
+ Battery Capacity............. 100 %
+ Remaining Runtime............ 77 min.
+ Load......................... 54 Watt(9 %)
+ Line Interaction............. None
+ Test Result.................. Passed at 2012/01/25 01:39:47
+ Last Power Event............. None
+"""
