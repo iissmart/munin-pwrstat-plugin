@@ -7,7 +7,7 @@ Install pwrstat from CyberPower (https://www.cyberpowersystems.com/product/softw
 Verify pwrstat is working by running `sudo pwrstat -status`
 
 ## Installation
-Place in /usr/share/munin/plugins, then create a symlink to it from /etc/munin/plugins.
+Place the pwrstat script from this repo into /usr/share/munin/plugins, make sure it is executable, then create a symlink to it from /etc/munin/plugins.
 
 Edit /etc/munin/plugin-conf.d/munin-node and add:
 ```
