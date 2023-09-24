@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 """
 pwrstat - Plugin to monitor CyberPower UPS via pwrstat
@@ -19,7 +19,7 @@ import sys, subprocess
 # config
 if len(sys.argv) > 1:
  if sys.argv[1] == "config":
-    print """
+    print("""
 graph_title CyberPower UPS Status
 graph_category sensors
 graph_vlabel value
@@ -56,7 +56,7 @@ loadPct.info Current load on UPS in Percentage
 loadPct.min 0
 loadPct.max 100
 loadPct.draw AREA
-"""
+""")
     sys.exit(0)
  else:
     sys.stderr.write("Unknown argument %s\n" % sys.argv[1])
@@ -65,19 +65,19 @@ loadPct.draw AREA
 # fetch
 
 output = subprocess.check_output(("/usr/sbin/pwrstat", "-status"), shell=False)
-output = output.split('\n')
+output = output.split(b'\n')
 data = {}
 for datum in output[10:-2]:
- name = datum[:29].strip('.').strip()
+ name = datum[:29].strip(b'.').strip()
  value = datum[31:].strip()
  data[name] = value
 
-print "inV.value", data["Utility Voltage"].split()[0]
-print "outV.value", data["Output Voltage"].split()[0]
-print "battery.value", data["Battery Capacity"].split()[0]
-print "runtime.value", data["Remaining Runtime"].split()[0]
-print "loadWatts.value", data["Load"].split()[0]
-print "loadPct.value", data["Load"].split()[1].split('(')[1]
+print("inV.value", data[b"Utility Voltage"].split()[0].decode())
+print("outV.value", data[b"Output Voltage"].split()[0].decode())
+print("battery.value", data[b"Battery Capacity"].split()[0].decode())
+print("runtime.value", data[b"Remaining Runtime"].split()[0].decode())
+print("loadWatts.value", data[b"Load"].split()[0].decode())
+print("loadPct.value", data[b"Load"].split()[1].split(b'(')[1].decode())
 
 sys.exit(0)
 
